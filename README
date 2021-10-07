@@ -1,0 +1,24 @@
+制作补丁包流程:
+1、把Bug修复掉后，先生成类的class文件。
+2、执行命令：EnjoyFix\app\build\intermediates\classes\debug>dx --dex --output=patch.jar com/enjoy/enjoyfix/Utils.class
+
+应用补丁包： patchElment（补丁包生成的） + oldElement(APK原有的) 赋值给oldElement
+1、获取程序的PathClassLoader对象
+2、反射获得PathClassLoader父类BaseDexClassLoader的pathList对象
+3、反射获取pathList的dexElements对象 （oldElement）
+4、把补丁包变成Element数组：patchElement（反射执行makePathElements）
+5、合并patchElement+oldElement = newElement （Array.newInstance）
+6、反射把oldElement赋值成newElement
+
+makePathElements参数：
+1、补丁包：List[new File("/sdcard/patch.jar")]
+2、optimizedDirectory 传一个私有目录就行比如：context.getCacheDir()
+3、ArrayList<IOException> suppressedExceptions = new ArrayList<IOException>();
+
+
+先运行Utils.java中错误的代码
+然后修改正确后，再rebuild项目
+在HotFix\app\build\intermediates\javac\debug\classes\com\example\hotfix\Utils.class
+dx 在对应sdk的build-tools下面
+dx --dex --output=patch.jar com/example/hotfix/Utils.class
+将生成的patch.jar放在MyApplication对应的修复路径下 "/sdcard/patch.jar"
